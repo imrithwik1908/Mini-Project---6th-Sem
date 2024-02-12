@@ -12,7 +12,7 @@ load_dotenv()
 # Strava OAuth settings
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = 'https://localhost:5000/strava/auth'  # Update with your actual redirect URI
+REDIRECT_URI = 'http://localhost:5000/'  # Update with the new redirect URI
 
 # Strava API endpoints
 STRAVA_AUTH_URL = 'https://www.strava.com/oauth/authorize'
@@ -26,7 +26,11 @@ def before_request():
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return redirect(url_for("dashboard"))
+
+@app.route("/get-started")
+def get_started():
+    return render_template('get_started.html')
 
 @app.route("/login")
 def login():
@@ -50,6 +54,8 @@ def strava_auth():
         # Retrieve authorization code from form data
         auth_code = request.form.get('code')
     
+    print("Received authorization code:", auth_code)  # Add this line for debugging
+    
     # Exchange authorization code for access token
     token_params = {
         'client_id': CLIENT_ID,
@@ -58,32 +64,30 @@ def strava_auth():
         'grant_type': 'authorization_code'
     }
     response = requests.post(TOKEN_URL, data=token_params)
+    print("Token exchange response:", response.json())  # Add this line for debugging
     if response.status_code == 200:
-        print(response.json())
         access_token = response.json()['access_token']
-        # print(response.json()['refresh_token'])
         # Store access token in session
         session['access_token'] = access_token
-        return redirect(url_for("dashboard", code=auth_code))
+        print("Access token stored in session:", access_token)  # Add this line for debugging
+        return redirect(url_for("dashboard"))
     else:
         return "Failed to authenticate with Strava"
+
 
 
 @app.route("/dashboard")
 def dashboard():
     access_token = session.get('access_token')
     if not access_token:
-        return redirect(url_for("login"))
+        return redirect(url_for("dashboard"))
 
     # Retrieve user data from Strava API
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(f"{API_URL}/athlete", headers=headers)
     if response.status_code == 200:
-        print("User_details responses : \n")
-        print(f"ACCESS_TOKEN : {access_token}")
-        print(response.json())
         user_name = response.json()["firstname"]
-        return render_template("dashboard.html", user_name=user_name)
+        return render_template("welcome.html", user_name=user_name)
     else:
         return "Failed to fetch user details"
 
