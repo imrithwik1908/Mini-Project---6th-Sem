@@ -12,7 +12,7 @@ load_dotenv()
 # Strava OAuth settings
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = 'https://localhost:5000/strava/auth'  # Update with your actual redirect URI
+REDIRECT_URI = 'http://localhost:5000/strava/auth'
 
 # Strava API endpoints
 STRAVA_AUTH_URL = 'https://www.strava.com/oauth/authorize'
