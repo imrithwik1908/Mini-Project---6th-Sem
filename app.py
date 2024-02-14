@@ -32,13 +32,23 @@ def home():
 def login():
     # Check if user is already authenticated
     if 'access_token' in session:
-        return redirect(url_for("dashboard"))
-    
+        # Check if the access token is valid by attempting to fetch user data
+        access_token = session.get('access_token')
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response = requests.get(f"{API_URL}/athlete", headers=headers)
+        if response.status_code == 200:
+            # User is already authenticated and access token is valid, redirect to dashboard
+            return redirect(url_for("dashboard"))
+        else:
+            # Access token is invalid or expired, clear session and proceed with login
+            session.clear()
+
     # Define the desired scope
     scope = "activity:read_all,read_all"
 
     # Redirect user to Strava's authorization page with the defined scope
     return redirect(f"{STRAVA_AUTH_URL}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope={scope}")
+
 
 
 @app.route("/strava/auth", methods=['GET', 'POST'])
@@ -79,13 +89,19 @@ def dashboard():
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(f"{API_URL}/athlete", headers=headers)
     if response.status_code == 200:
-        print("User_details responses : \n")
-        print(f"ACCESS_TOKEN : {access_token}")
-        print(response.json())
         user_name = response.json()["firstname"]
-        return render_template("dashboard.html", user_name=user_name)
+
+        # Fetch activities
+        activities_response = requests.get(f"{API_URL}/athlete/activities", headers=headers)
+        if activities_response.status_code == 200:
+            activities = activities_response.json()
+        else:
+            activities = []
+
+        return render_template("dashboard.html", user_name=user_name, activities=activities)
     else:
         return "Failed to fetch user details"
+
 
 @app.route("/logout")
 def logout():

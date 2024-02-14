@@ -21,4 +21,4 @@ def logout():
     # Clear session
     session.clear()
     # Redirect user to home page after logout
-    return redirect(url_for("home"))
+    return redirect(url_for("home.home"))

@@ -1,5 +1,3 @@
-<!-- dashboard.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +6,34 @@
     <title>Dashboard</title>
 </head>
 <body>
-    <h1>Welcome, {{ user_name }}!</h1>
-    <p>This is your dashboard.</p>
-    <a href="{{ url_for('logout.logout') }}">Logout</a>
+    <h1>Welcome to your Dashboard, {{ user_name }}!</h1>
+    <h2>Your Activities:</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Distance</th>
+                <th>Moving Time</th>
+                <th>Elapsed Time</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in activities %}
+            <tr>
+                <td>{{ activity.name }}</td>
+                <td>{{ activity.type }}</td>
+                <td>{{ activity.distance }}</td>
+                <td>{{ activity.moving_time }}</td>
+                <td>{{ activity.elapsed_time }}</td>
+                <td>{{ activity.start_date }}</td>
+                <td>{{ activity.end_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>
