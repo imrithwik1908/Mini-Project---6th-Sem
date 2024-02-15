@@ -1,10 +1,30 @@
+from datetime import datetime, timedelta
 from flask import Flask, redirect, url_for, render_template, session, request
 import requests
 from dotenv import load_dotenv
 import os
+import humanize
 
 app = Flask(__name__)
 app.secret_key = "supersekrit"
+
+# Define a custom Jinja filter for formatting datetime
+@app.template_filter('format_datetime')
+def format_datetime(dt):
+    # Parse the datetime string into a datetime object
+    dt_obj = datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
+    # Format the datetime object into the desired format
+    formatted_dt = dt_obj.strftime('%d %B %Y, %I:%M:%S %p')
+    return formatted_dt
+
+# Define a custom Jinja filter for formatting timedelta
+@app.template_filter('format_timedelta')
+def format_timedelta(seconds):
+    # Convert seconds to timedelta object
+    td = timedelta(seconds=seconds)
+    # Format timedelta using humanize library
+    return humanize.precisedelta(td)
+
 
 # Load environment variables
 load_dotenv()
@@ -98,7 +118,7 @@ def dashboard():
         else:
             activities = []
 
-        return render_template("dashboard.html", user_name=user_name, activities=activities)
+        return render_template("dashboard.html", user_name=user_name, activities=activities, format_datetime=format_datetime)
     else:
         return "Failed to fetch user details"
 

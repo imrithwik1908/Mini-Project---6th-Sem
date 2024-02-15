@@ -4,36 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Welcome to your Dashboard, {{ user_name }}!</h1>
-    <h2>Your Activities:</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Distance</th>
-                <th>Moving Time</th>
-                <th>Elapsed Time</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for activity in activities %}
-            <tr>
-                <td>{{ activity.name }}</td>
-                <td>{{ activity.type }}</td>
-                <td>{{ activity.distance }}</td>
-                <td>{{ activity.moving_time }}</td>
-                <td>{{ activity.elapsed_time }}</td>
-                <td>{{ activity.start_date }}</td>
-                <td>{{ activity.end_date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <div class="container">
+        <header>
+            <h1>Welcome to your Dashboard, {{ user_name }}!</h1>
+        </header>
+        <section>
+            <h2>Your Activities:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Distance</th>
+                        <th>Moving Time</th>
+                        <th>Elapsed Time</th>
+                        <th>Start Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.name }}</td>
+                        <td>{{ activity.type }}</td>
+                        <td>{{ activity.distance }}</td>
+                        <td>{{ activity.moving_time | format_timedelta}}</td>
+                        <td>{{ activity.elapsed_time | format_timedelta }}</td>
+                        <td>{{ activity.start_date | format_datetime }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <footer>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </footer>
+    </div>
 </body>
 </html>
