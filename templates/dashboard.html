@@ -11,6 +11,17 @@
         <header>
             <h1>Welcome to your Dashboard, {{ user_name }}!</h1>
         </header>
+        
+        <section>
+            <h2>Filter Activities:</h2>
+            <form method="post">
+                <label for="start_date">Start Date:</label>
+                <input type="text" id="start_date" name="start_date" placeholder="DD-MM-YYYY">
+
+                <button type="submit">Apply Filter</button>
+            </form>
+        </section>
+
         <section>
             <h2>Your Activities:</h2>
             <table>
@@ -38,6 +49,7 @@
                 </tbody>
             </table>
         </section>
+
         <footer>
             <a href="{{ url_for('logout') }}">Logout</a>
         </footer>

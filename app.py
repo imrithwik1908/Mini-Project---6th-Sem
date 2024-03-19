@@ -25,7 +25,6 @@ def format_timedelta(seconds):
     # Format timedelta using humanize library
     return humanize.precisedelta(td)
 
-
 # Load environment variables
 load_dotenv()
 
@@ -46,7 +45,18 @@ def before_request():
 
 @app.route("/")
 def home():
+    if 'access_token' in session:
+        # Check if the access token is valid
+        access_token = session.get('access_token')
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response = requests.get(f"{API_URL}/athlete", headers=headers)
+        if response.status_code == 200:
+            # User is already authenticated and access token is valid, redirect to dashboard
+            return redirect(url_for("dashboard"))
+
+    # User is not logged in or access token is invalid, render the home page with login button
     return render_template("home.html")
+
 
 @app.route("/login")
 def login():
@@ -64,12 +74,10 @@ def login():
             session.clear()
 
     # Define the desired scope
-    scope = "activity:read_all,read_all"
+    scope = "activity:read_all,read_all" 
 
     # Redirect user to Strava's authorization page with the defined scope
     return redirect(f"{STRAVA_AUTH_URL}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope={scope}")
-
-
 
 @app.route("/strava/auth", methods=['GET', 'POST'])
 def strava_auth():
@@ -98,8 +106,7 @@ def strava_auth():
     else:
         return "Failed to authenticate with Strava"
 
-
-@app.route("/dashboard")
+@app.route("/dashboard", methods=['GET', 'POST'])
 def dashboard():
     access_token = session.get('access_token')
     if not access_token:
@@ -116,7 +123,23 @@ def dashboard():
         if activities_response.status_code == 200:
             activities = activities_response.json()
         else:
-            activities = []
+            activities = [] 
+
+        # Filter activities based on start date if provided
+        start_date_input = request.form.get('start_date')
+        if start_date_input:
+            # Convert input date to format matching Strava's start_date
+            try:
+                start_date = datetime.strptime(start_date_input, '%d-%m-%Y').strftime('%Y-%m-%d')
+            except ValueError:
+                return "Invalid date format. Please use DD-MM-YYYY format."
+
+            filtered_activities = []
+            for activity in activities:
+                activity_start_date = activity['start_date'][:10]  # Extract date part
+                if start_date == activity_start_date:
+                    filtered_activities.append(activity)
+            activities = filtered_activities
 
         return render_template("dashboard.html", user_name=user_name, activities=activities, format_datetime=format_datetime)
     else:
