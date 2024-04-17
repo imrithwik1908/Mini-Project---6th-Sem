@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Revoked</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            max-width: 400px;
+            width: 80%;
+        }
+
+        h1 {
+            color: #dc3545;
+            font-size: 24px;
+        }
+
+        p {
+            color: #343a40;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #countdown {
+            font-size: 18px;
+            color: #007bff;
+        }
+    </style>
+    <script>
+        var countdown = 5; // Countdown duration in seconds
+        var timer = setInterval(function() {
+            countdown--;
+            document.getElementById('countdown').innerText = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = "/";
+            }
+        }, 1000); // Update every second
+    </script>
+</head> 
+<body>
+    <div class="container">
+        <h1>Access Might Be Revoked</h1>
+        <p>Your access to the application might be revoked. Please login again.</p>
+        <p>Redirecting you to home page in <span id="countdown">5</span> seconds...</p>
+    </div>
+</body>
+</html>

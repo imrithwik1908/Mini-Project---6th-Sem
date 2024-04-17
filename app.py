@@ -4,9 +4,23 @@ import requests
 from dotenv import load_dotenv
 import os
 import humanize
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from create_database import Base, User, Activity, Challenge, Leadership, Comment, Share
 
 app = Flask(__name__)
 app.secret_key = "supersekrit"
+
+# Load environment variables
+load_dotenv()
+
+# Database engine
+engine = create_engine('sqlite:///my_database1.db')
+Base.metadata.bind = engine
+
+# Rename the SQLAlchemy session object to avoid conflicts
+DBSession = sessionmaker(bind=engine)
+db_session = DBSession()
 
 # Define a custom Jinja filter for formatting datetime
 @app.template_filter('format_datetime')
@@ -24,9 +38,6 @@ def format_timedelta(seconds):
     td = timedelta(seconds=seconds)
     # Format timedelta using humanize library
     return humanize.precisedelta(td)
-
-# Load environment variables
-load_dotenv()
 
 # Strava OAuth settings
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -87,7 +98,7 @@ def strava_auth():
     elif request.method == 'POST':
         # Retrieve authorization code from form data
         auth_code = request.form.get('code')
-    
+
     # Exchange authorization code for access token
     token_params = {
         'client_id': CLIENT_ID,
@@ -97,14 +108,33 @@ def strava_auth():
     }
     response = requests.post(TOKEN_URL, data=token_params)
     if response.status_code == 200:
-        print(response.json())
-        access_token = response.json()['access_token']
-        # print(response.json()['refresh_token'])
-        # Store access token in session
-        session['access_token'] = access_token
-        return redirect(url_for("dashboard", code=auth_code))
+        access_token = response.json().get('access_token')
+
+        # Fetch user data from Strava API
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response = requests.get(f"{API_URL}/athlete/activities", headers=headers)
+        if response.status_code == 200:
+            activities = response.json()
+
+            # Add each activity to the database
+            for activity in activities:
+                name = activity.get('name')
+                dist = activity.get('distance')
+                moving_time = activity.get('moving_time')
+                start_date = activity.get('start_date')
+                add_activity_to_database(name, dist, moving_time, start_date)
+
+            # Store the access token in session
+            session['access_token'] = access_token
+
+            # Redirect to the dashboard
+            return redirect(url_for("dashboard"))
+        else:
+            return "Failed to fetch user activities from Strava API"
     else:
         return "Failed to authenticate with Strava"
+
+
 
 @app.route("/dashboard", methods=['GET', 'POST'])
 def dashboard():
@@ -140,14 +170,15 @@ def dashboard():
                 if start_date == activity_start_date:
                     filtered_activities.append(activity)
             activities = filtered_activities
-
+ 
         return render_template("dashboard.html", user_name=user_name, activities=activities, format_datetime=format_datetime)
     else:
-        return "Failed to fetch user details"
+        # Access might be revoked, display message and redirect after a delay
+        return render_template("access_revoked.html")
 
 
 @app.route("/logout")
-def logout():
+def logout(): 
     access_token = session.get('access_token')
     if access_token:
         # Revoke access token
@@ -165,5 +196,26 @@ def logout():
     # Redirect user to home page after logout
     return redirect(url_for("home"))
 
+# Function to add activity data to the database
+def add_activity_to_database(name, dist, moving_time, start_date):
+    try:
+        # Convert start_date string to Python datetime object
+        start_date_dt = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
+
+        # Create a new Activity object with the provided data
+        new_activity = Activity(
+            name=name,
+            dist=dist,
+            moving_time=moving_time,
+            start_date=start_date_dt,
+        )
+        db_session.add(new_activity)
+        db_session.commit()
+        print("Activity data added successfully.")
+    except Exception as e:
+        # Rollback the transaction if an error occurs
+        db_session.rollback()
+        print(f"Error occurred while adding activity data: {str(e)}")
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True) 
