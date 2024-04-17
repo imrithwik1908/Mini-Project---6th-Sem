@@ -4,23 +4,12 @@ import requests
 from dotenv import load_dotenv
 import os
 import humanize
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from create_database import Base, User, Activity, Challenge, Leadership, Comment, Share
 
 app = Flask(__name__)
 app.secret_key = "supersekrit"
 
 # Load environment variables
 load_dotenv()
-
-# Database engine
-engine = create_engine('sqlite:///my_database1.db')
-Base.metadata.bind = engine
-
-# Rename the SQLAlchemy session object to avoid conflicts
-DBSession = sessionmaker(bind=engine)
-db_session = DBSession()
 
 # Define a custom Jinja filter for formatting datetime
 @app.template_filter('format_datetime')
@@ -115,15 +104,6 @@ def strava_auth():
         response = requests.get(f"{API_URL}/athlete/activities", headers=headers)
         if response.status_code == 200:
             activities = response.json()
-
-            # Add each activity to the database
-            for activity in activities:
-                name = activity.get('name')
-                dist = activity.get('distance')
-                moving_time = activity.get('moving_time')
-                start_date = activity.get('start_date')
-                add_activity_to_database(name, dist, moving_time, start_date)
-
             # Store the access token in session
             session['access_token'] = access_token
 
@@ -195,27 +175,6 @@ def logout():
     session.clear()
     # Redirect user to home page after logout
     return redirect(url_for("home"))
-
-# Function to add activity data to the database
-def add_activity_to_database(name, dist, moving_time, start_date):
-    try:
-        # Convert start_date string to Python datetime object
-        start_date_dt = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-
-        # Create a new Activity object with the provided data
-        new_activity = Activity(
-            name=name,
-            dist=dist,
-            moving_time=moving_time,
-            start_date=start_date_dt,
-        )
-        db_session.add(new_activity)
-        db_session.commit()
-        print("Activity data added successfully.")
-    except Exception as e:
-        # Rollback the transaction if an error occurs
-        db_session.rollback()
-        print(f"Error occurred while adding activity data: {str(e)}")
 
 if __name__ == "__main__":
     app.run(debug=True) 
