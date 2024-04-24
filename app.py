@@ -126,6 +126,7 @@ def dashboard():
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(f"{API_URL}/athlete", headers=headers)
     if response.status_code == 200:
+        print(response.json())
         user_name = response.json()["firstname"]
 
         # Fetch activities
