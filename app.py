@@ -77,7 +77,8 @@ def login():
     scope = "activity:read_all,read_all" 
 
     # Redirect user to Strava's authorization page with the defined scope
-    return redirect(f"{STRAVA_AUTH_URL}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope={scope}")
+    redirect_url = f"{STRAVA_AUTH_URL}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope={scope}"
+    return redirect_url
 
 @app.route("/strava/auth", methods=['GET', 'POST'])
 def strava_auth():
