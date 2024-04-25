@@ -1,2 +1,6 @@
 .env
 my_database1.db
+dist/
+.pypirc
+token.txt
+strava_api.egg-info/
