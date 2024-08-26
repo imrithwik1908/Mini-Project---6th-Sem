@@ -81,6 +81,7 @@ def login():
 
 @app.route("/strava/auth", methods=['GET', 'POST'])
 def strava_auth():
+    auth_code = None
     if request.method == 'GET':
         # Retrieve authorization code from query parameters
         auth_code = request.args.get('code')
@@ -88,31 +89,35 @@ def strava_auth():
         # Retrieve authorization code from form data
         auth_code = request.form.get('code')
 
-    # Exchange authorization code for access token
-    token_params = {
-        'client_id': CLIENT_ID,
-        'client_secret': CLIENT_SECRET,
-        'code': auth_code,
-        'grant_type': 'authorization_code'
-    }
-    response = requests.post(TOKEN_URL, data=token_params)
-    if response.status_code == 200:
-        access_token = response.json().get('access_token')
-
-        # Fetch user data from Strava API
-        headers = {'Authorization': f'Bearer {access_token}'}
-        response = requests.get(f"{API_URL}/athlete/activities", headers=headers)
+    if auth_code:
+        # Exchange authorization code for access token
+        token_params = {
+            'client_id': CLIENT_ID,
+            'client_secret': CLIENT_SECRET,
+            'code': auth_code,
+            'grant_type': 'authorization_code'
+        }
+        response = requests.post(TOKEN_URL, data=token_params)
         if response.status_code == 200:
-            activities = response.json()
-            # Store the access token in session
-            session['access_token'] = access_token
+            access_token = response.json().get('access_token')
 
-            # Redirect to the dashboard
-            return redirect(url_for("dashboard"))
+            # Fetch user data from Strava API
+            headers = {'Authorization': f'Bearer {access_token}'}
+            response = requests.get(f"{API_URL}/athlete/activities", headers=headers)
+            if response.status_code == 200:
+                activities = response.json()
+                # Store the access token in session
+                session['access_token'] = access_token
+
+                # Redirect to the dashboard
+                return redirect(url_for("dashboard"))
+            else:
+                return "Failed to fetch user activities from Strava API"
         else:
-            return "Failed to fetch user activities from Strava API"
+            return "Failed to authenticate with Strava"
     else:
-        return "Failed to authenticate with Strava"
+        return "Authorization code not found"
+
 
 
 
@@ -178,4 +183,4 @@ def logout():
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001) 
+    app.run(debug=True) 

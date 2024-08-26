@@ -13,7 +13,7 @@ load_dotenv()
 # Strava OAuth settings
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = 'http://localhost'
+REDIRECT_URI = 'https://localhost'
 STRAVA_AUTH_URL = 'https://www.strava.com/oauth/authorize'
 TOKEN_URL = 'https://www.strava.com/oauth/token'
 API_URL = 'https://www.strava.com/api/v3'
@@ -35,7 +35,7 @@ def strava_auth():
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
         'code': auth_code,
-        'grant_type': 'authorization_code'
+        'grant_type': 'authorization_code' 
     }
     response = requests.post(TOKEN_URL, data=token_params)
     if response.status_code == 200:

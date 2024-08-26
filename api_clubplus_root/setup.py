@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='strava_api',
+    name='api_clubplus',
     version='0.1.0',
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     install_requires=[
         'Flask',
         'requests',
@@ -11,7 +12,7 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        strava_api=strava_api.api:main
+        strava_api=strava_api_clubplus.api:main
     ''',
     author='Club+',
     author_email='reddyrithwik23@gmail.com',

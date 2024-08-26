@@ -1,0 +1,2 @@
+[console_scripts]
+strava_api = strava_api_clubplus.api:main

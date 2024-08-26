@@ -1,0 +1,10 @@
+pyproject.toml
+setup.py
+src/api_clubplus/__init__.py
+src/api_clubplus/api.py
+src/api_clubplus.egg-info/PKG-INFO
+src/api_clubplus.egg-info/SOURCES.txt
+src/api_clubplus.egg-info/dependency_links.txt
+src/api_clubplus.egg-info/entry_points.txt
+src/api_clubplus.egg-info/requires.txt
+src/api_clubplus.egg-info/top_level.txt

@@ -4,3 +4,5 @@ dist/
 .pypirc
 token.txt
 strava_api.egg-info/
+_pycache_/
+.vscode/
